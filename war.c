@@ -12,6 +12,16 @@ struct Territorio {
     char cor[10];
     int tropas;
 };
+
+// Função para exibir o status atualizado do jogo
+void exibirStatusMapa(struct Territorio territorios[]) {
+    printf("\n=== STATUS ATUALIZADO DO MAPA ===\n");
+    for (int i = 0; i < 5; i++) {
+        printf("[%d] %s (Cor: %s) - %d tropa(s)\n", 
+               i + 1, territorios[i].nome, territorios[i].cor, territorios[i].tropas);
+    }
+    printf("=================================\n");
+}
 // Realizando batalha e suas regras
 void realizarBatalha(struct Territorio *atacante, struct Territorio *defensor) {
     printf("\n=== Batalha: %s (Ataque) vs %s (Defesa) ===\n", atacante->nome, defensor->nome);
@@ -98,6 +108,68 @@ void modoDesafio(struct Territorio territorios[]){
     }
 }
 
+void modoMissao(struct Territorio territorios[]) {
+    printf("\n=====================================\n");
+    printf("        MODO MISSÃO ALEATÓRIA        \n");
+    printf("=====================================\n");
+
+    // Sorteia um índice de 0 a 4 para ser a referência do alvo
+    int indiceSorteado = rand() % 5;
+    char corAlvo[10];
+    strcpy(corAlvo, territorios[indiceSorteado].cor); // Copia a cor do alvo sorteado
+
+    printf("\n>>> MISSÃO: Elimine todas as tropas do exército da cor %s! <<<\n", corAlvo);
+    sleep(2);
+
+    int emMissao = 1;
+    int opAtaque, opDefesa;
+
+    while (emMissao == 1) {
+        exibirStatusMapa(territorios);
+
+        // Verifica se o jogador já venceu a missão
+        int tropasRestantesAlvo = 0;
+        for (int i = 0; i < 5; i++) {
+            // Se a cor do território for igual à cor alvo, soma as tropas
+            if (strcmp(territorios[i].cor, corAlvo) == 0) {
+                tropasRestantesAlvo += territorios[i].tropas;
+            }
+        }
+
+        if (tropasRestantesAlvo <= 0) {
+            printf("\nVITÓRIA! Você concluiu a missão e eliminou a cor %s!\n", corAlvo);
+            break; // Sai do laço da missão
+        }
+
+        // 2. Interface de ação do jogador
+        printf("\nLembre-se da Missão: Atacar a cor %s.\n", corAlvo);
+        printf("Digite o número do seu território ATACANTE (ou 0 para abortar a missão): ");
+        scanf("%d", &opAtaque);
+
+        if (opAtaque == 0) {
+            printf("\nMissão abortada pelo jogador.\n");
+            break;
+        }
+
+        printf("Digite o número do território DEFENSOR (Alvo): ");
+        scanf("%d", &opDefesa);
+
+        // 3. Validações de segurança
+        if (opAtaque < 1 || opAtaque > 5 || opDefesa < 1 || opDefesa > 5) {
+            printf("-> Opção inválida! Digite números entre 1 e 5.\n");
+            continue;
+        }
+        if (opAtaque == opDefesa) {
+            printf("-> Operação inválida! Você não pode atacar a si mesmo.\n");
+            continue;
+        }
+
+        // 4. Executa o combate (sua função já faz a matemática de tropas perfeitamente)
+        realizarBatalha(&territorios[opAtaque - 1], &territorios[opDefesa - 1]);
+        sleep(2); // Pausa para o jogador ler o resultado dos dados antes de atualizar o mapa
+    }
+}
+
 int main() {
     srand(time(NULL)); //Embaralhar os dados
     struct Territorio
@@ -163,4 +235,30 @@ while (continuar == 1) {
 printf("\nJogo encerrado!");
     
     return 0;
+
+int escolhaMenu = -1;
+
+while (escolhaMenu != 0) {
+printf("\n===========================\n");
+printf("       MENU PRINCIPAL      \n");
+printf("===========================\n");
+printf("[1] Batalha Livre\n");
+printf("[2] Modo Desafio (Um contra Todos)\n");
+printf("[3] Modo Missão Aleatória\n");
+printf("[0] Sair do Jogo\n");
+printf("Escolha uma opção: ");
+scanf("%d", &escolhaMenu);
+
+if (escolhaMenu == 1) {
+    // Aqui você pode colocar aquele seu while antigo de batalha livre
+    printf("\nModo Batalha Livre selecionado...\n");
+} else if (escolhaMenu == 2) {
+    modoDesafio(territorios);
+} else if (escolhaMenu == 3) {
+    modoMissao(territorios);
+}
+}
+
+printf("\nJogo encerrado! Obrigado por jogar.\n");
+return 0;
 }
